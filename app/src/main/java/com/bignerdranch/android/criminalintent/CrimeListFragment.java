@@ -1,5 +1,6 @@
 package com.bignerdranch.android.criminalintent;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,15 +26,35 @@ import java.util.UUID;
 public class CrimeListFragment extends Fragment {
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
+    private static final String TAG = "CrimeListFragment";
 
     @Override
     public void onResume() {
+        Log.d(TAG, "onResume: ");
         super.onResume();
         updateUI();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 0) {
+
+            if (resultCode == Activity.RESULT_OK) {
+                UUID id = (UUID) data.getSerializableExtra(CrimeFragment.ARG_CRIME_ID);
+                //mAdapter.notifyDataSetChanged(0);
+//                Toast.makeText(getActivity().getApplicationContext(), id.toString(), Toast.LENGTH_SHORT);
+//                Toast.makeText(getActivity().getApplicationContext(), "a", Toast.LENGTH_SHORT);
+//                Toast.makeText(getActivity(), "b", Toast.LENGTH_SHORT);
+                Log.d(TAG, "onActivityResult: " + id.toString());
+            }
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle
+            savedInstanceState) {
+        Log.d(TAG, "onCreateView: ");
         View view = inflater.inflate(R.layout.fragment_crime_list, container, false);
 
         mCrimeRecyclerView = (RecyclerView) view.findViewById(R.id.crime_recycler_view);
@@ -68,8 +90,9 @@ public class CrimeListFragment extends Fragment {
             itemView.setOnClickListener(v -> {
 //                Toast.makeText(getActivity(), mCrime.getTitle() + " click", Toast.LENGTH_SHORT).show();
                 Intent intent = CrimeActivity.getIntent(getActivity(), mCrime.getId());
+//                startActivity(intent);
+                startActivityForResult(intent, 0);
 
-                startActivity(intent);
             });
 
             txtTitle = (TextView) itemView.findViewById(R.id.crime_title);

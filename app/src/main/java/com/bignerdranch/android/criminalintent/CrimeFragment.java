@@ -25,11 +25,22 @@ import java.util.UUID;
  */
 public class CrimeFragment extends Fragment {
 
+    private static final String ARG_CRIME_ID = "crime_id";
+
+
     private Crime crime;
 
     private EditText edCrimeTitle;
     private Button btnCrimeDate;
     private CheckBox cbCrimeSolved;
+
+    public static CrimeFragment newInstance(UUID crimeId) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_CRIME_ID, crimeId);
+        CrimeFragment fragment = new CrimeFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     public CrimeFragment() {
         // Required empty public constructor
@@ -39,8 +50,10 @@ public class CrimeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = getActivity().getIntent();
-        UUID id = (UUID) intent.getSerializableExtra(CrimeActivity.EXTRA_CRIME_ID);
+//        Intent intent = getActivity().getIntent();
+//        UUID id = (UUID) intent.getSerializableExtra(CrimeActivity.EXTRA_CRIME_ID);
+
+        UUID id= (UUID) getArguments().getSerializable(ARG_CRIME_ID);
         crime = CrimeLab.get(getActivity()).getCrime(id);
 
     }

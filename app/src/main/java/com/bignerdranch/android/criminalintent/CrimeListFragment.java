@@ -1,5 +1,7 @@
 package com.bignerdranch.android.criminalintent;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -17,6 +19,7 @@ import com.bignerdranch.android.criminalintent.model.Crime;
 import com.bignerdranch.android.criminalintent.model.CrimeLab;
 
 import java.util.List;
+import java.util.UUID;
 
 public class CrimeListFragment extends Fragment {
     private RecyclerView mCrimeRecyclerView;
@@ -50,7 +53,12 @@ public class CrimeListFragment extends Fragment {
             super(inflater.inflate(R.layout.list_item_crime, parent, false));
 
             //单项点击事件
-            itemView.setOnClickListener(v -> Toast.makeText(getActivity(), mCrime.getTitle() + " click", Toast.LENGTH_SHORT).show());
+            itemView.setOnClickListener(v -> {
+//                Toast.makeText(getActivity(), mCrime.getTitle() + " click", Toast.LENGTH_SHORT).show();
+                Intent intent = CrimeActivity.getIntent(getActivity(), mCrime.getId());
+
+                startActivity(intent);
+            });
 
             txtTitle = (TextView) itemView.findViewById(R.id.crime_title);
             txtDate = (TextView) itemView.findViewById(R.id.crime_date);
@@ -58,12 +66,13 @@ public class CrimeListFragment extends Fragment {
 
         }
 
+
         private Crime mCrime;
 
         public void bind(Crime crime) {
             mCrime = crime;
             txtTitle.setText(mCrime.getTitle());
-            txtDate.setText(DateFormat.format("yyyy-MM-dd kk:mm:ss" ,mCrime.getDate()).toString());
+            txtDate.setText(DateFormat.format("yyyy-MM-dd kk:mm:ss", mCrime.getDate()).toString());
             ivSolved.setVisibility(crime.isSolved() ? View.VISIBLE : View.GONE);
         }
 

@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,7 +63,7 @@ public class CrimeListFragment extends Fragment {
         public void bind(Crime crime) {
             mCrime = crime;
             txtTitle.setText(mCrime.getTitle());
-            txtDate.setText(mCrime.getDate().toString());
+            txtDate.setText(DateFormat.format("yyyy-MM-dd kk:mm:ss" ,mCrime.getDate()).toString());
             ivSolved.setVisibility(crime.isSolved() ? View.VISIBLE : View.GONE);
         }
 

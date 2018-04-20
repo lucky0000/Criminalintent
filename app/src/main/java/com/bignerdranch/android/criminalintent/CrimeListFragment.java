@@ -89,7 +89,8 @@ public class CrimeListFragment extends Fragment {
             //单项点击事件
             itemView.setOnClickListener(v -> {
 //                Toast.makeText(getActivity(), mCrime.getTitle() + " click", Toast.LENGTH_SHORT).show();
-                Intent intent = CrimeActivity.getIntent(getActivity(), mCrime.getId());
+//                Intent intent = CrimeActivity.getIntent(getActivity(), mCrime.getId());
+                Intent intent = CrimePagerActivity.getIntent(getActivity(), mCrime.getId());
 //                startActivity(intent);
                 startActivityForResult(intent, 0);
 

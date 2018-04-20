@@ -2,6 +2,7 @@ package com.bignerdranch.android.criminalintent;
 
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -28,7 +29,7 @@ import java.util.UUID;
 public class CrimeFragment extends Fragment {
 
     public static final String ARG_CRIME_ID = "crime_id";
-
+    private static final String DIALOG_DATE = "DialogDate";
 
     private Crime crime;
 
@@ -36,6 +37,7 @@ public class CrimeFragment extends Fragment {
     private Button btnCrimeDate;
     private CheckBox cbCrimeSolved;
     private static final String TAG = "CrimeFragment";
+
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
@@ -105,7 +107,13 @@ public class CrimeFragment extends Fragment {
         });
 
         btnCrimeDate.setText(crime.getDate().toString());
-        btnCrimeDate.setEnabled(false);
+//        btnCrimeDate.setEnabled(false);
+        btnCrimeDate.setOnClickListener((v1) -> {
+            android.support.v4.app.FragmentManager manager = getFragmentManager();
+            DatePickerFragment dialog = new DatePickerFragment();
+            dialog.show(manager, DIALOG_DATE);
+        });
+
         cbCrimeSolved.setChecked(crime.isSolved());
         cbCrimeSolved.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

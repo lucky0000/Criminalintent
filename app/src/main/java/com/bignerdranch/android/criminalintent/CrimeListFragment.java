@@ -4,13 +4,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -28,12 +34,32 @@ public class CrimeListFragment extends Fragment {
     private CrimeAdapter mAdapter;
     private static final String TAG = "CrimeListFragment";
 
+    private boolean mSubtitleVisible;
+
     @Override
     public void onResume() {
         Log.d(TAG, "onResume: ");
         super.onResume();
+        //从详情页返回后 需要更新列表显示新的内容
         updateUI();
     }
+
+    /**
+     * 创建工具栏上的菜单
+     */
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_crime_list, menu);
+
+        MenuItem item = menu.findItem(R.id.show_subtitle);
+        if (mSubtitleVisible)
+            item.setTitle(R.string.hide_subtitle);
+        else
+            item.setTitle(R.string.show_subtitle);
+
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -49,6 +75,16 @@ public class CrimeListFragment extends Fragment {
                 Log.d(TAG, "onActivityResult: " + id.toString());
             }
         }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+
+        //启动菜单
+        setHasOptionsMenu(true);
+
     }
 
     @Override
@@ -75,6 +111,44 @@ public class CrimeListFragment extends Fragment {
         } else {
             mAdapter.notifyDataSetChanged();
         }
+        updateSubtitle();
+    }
+
+    private void updateSubtitle() {
+        String subtitle;
+        if (mSubtitleVisible) {
+            int count = CrimeLab.get(getActivity()).getCrimes().size();
+            subtitle = getString(R.string.subtitle_format, count);
+        } else
+            subtitle = null;
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        activity.getSupportActionBar().setSubtitle(subtitle);
+    }
+
+    /**
+     * 菜单项选择事件
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.new_crime:
+                Crime crime = new Crime();
+                CrimeLab.get(getActivity()).addCrime(crime);
+
+                Intent intent = CrimePagerActivity.getIntent(getActivity(), crime.getId());
+                startActivityForResult(intent, 0);
+                return true;
+            case R.id.show_subtitle:
+                mSubtitleVisible = !mSubtitleVisible;
+                getActivity().invalidateOptionsMenu();
+                updateSubtitle();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+
 
     }
 

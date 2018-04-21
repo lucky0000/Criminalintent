@@ -105,11 +105,19 @@ public class CrimeListFragment extends Fragment {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
 
-        if (mAdapter == null) {
-            mAdapter = new CrimeAdapter(crimes);
-            mCrimeRecyclerView.setAdapter(mAdapter);
+        if (crimes.size() < 1) {
+            //没有数据时 显示一个提示
+            getActivity().setContentView(R.layout.activity_empty_data);
+
         } else {
-            mAdapter.notifyDataSetChanged();
+
+            if (mAdapter == null) {
+                mAdapter = new CrimeAdapter(crimes);
+                mCrimeRecyclerView.setAdapter(mAdapter);
+            } else {
+                mAdapter.notifyDataSetChanged();
+            }
+
         }
         updateSubtitle();
     }

@@ -24,7 +24,9 @@ public class CrimeLab {
     public void addCrime(Crime crime) {
         mCrimes.add(crime);
     }
-
+    public void delCrime(Crime crime) {
+        mCrimes.remove(crime);
+    }
     public Crime getCrime(UUID id) {
 
         for (Crime item : mCrimes) {

@@ -38,6 +38,7 @@ public class CrimeFragment extends Fragment {
 
     private EditText edCrimeTitle;
     private Button btnCrimeDate;
+    private Button btnCrimeDelete;
     private CheckBox cbCrimeSolved;
     private static final String TAG = "CrimeFragment";
 
@@ -68,10 +69,10 @@ public class CrimeFragment extends Fragment {
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult: "+requestCode+" "+resultCode);
+        Log.d(TAG, "onActivityResult: " + requestCode + " " + resultCode);
 //        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_DATA && resultCode == Activity.RESULT_OK){
-            Date date= (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+        if (requestCode == REQUEST_DATA && resultCode == Activity.RESULT_OK) {
+            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             crime.setDate(date);
             updateDate();
         }
@@ -117,6 +118,7 @@ public class CrimeFragment extends Fragment {
 
         edCrimeTitle = (EditText) v.findViewById(R.id.et_crime_title);
         btnCrimeDate = (Button) v.findViewById(R.id.btn_crime_date);
+        btnCrimeDelete = (Button) v.findViewById(R.id.btn_crime_delete);
         cbCrimeSolved = (CheckBox) v.findViewById(R.id.cb_crime_solved);
 
         edCrimeTitle.setText(crime.getTitle());
@@ -153,6 +155,12 @@ public class CrimeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 crime.setSolved(isChecked);
             }
+        });
+
+
+        btnCrimeDelete.setOnClickListener(v2 -> {
+            CrimeLab.get(getContext()).delCrime(crime);
+            getActivity().finish();
         });
 
         return v;

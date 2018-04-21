@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.EditText;
 import com.bignerdranch.android.criminalintent.model.Crime;
 import com.bignerdranch.android.criminalintent.model.CrimeLab;
 
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -30,6 +32,7 @@ public class CrimeFragment extends Fragment {
 
     public static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
+    private static final int REQUEST_DATA = 0;
 
     private Crime crime;
 
@@ -48,6 +51,34 @@ public class CrimeFragment extends Fragment {
 
     public CrimeFragment() {
         // Required empty public constructor
+    }
+
+    /**
+     * Receive the result from a previous call to
+     * {@link #startActivityForResult(Intent, int)}.  This follows the
+     * related Activity API as described there in
+     * {@link Activity#onActivityResult(int, int, Intent)}.
+     *
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode  The integer result code returned by the child activity
+     *                    through its setResult().
+     * @param data        An Intent, which can return result data to the caller
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult: "+requestCode+" "+resultCode);
+//        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_DATA && resultCode == Activity.RESULT_OK){
+            Date date= (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            crime.setDate(date);
+            updateDate();
+        }
+    }
+
+    private void updateDate() {
+        btnCrimeDate.setText(DateFormat.format("yyyy-MM-dd kk:mm:ss", crime.getDate()).toString());
     }
 
     @Override
@@ -106,11 +137,13 @@ public class CrimeFragment extends Fragment {
             }
         });
 
-        btnCrimeDate.setText(crime.getDate().toString());
+//        btnCrimeDate.setText(crime.getDate().toString());
+        updateDate();
 //        btnCrimeDate.setEnabled(false);
         btnCrimeDate.setOnClickListener((v1) -> {
             android.support.v4.app.FragmentManager manager = getFragmentManager();
-            DatePickerFragment dialog = new DatePickerFragment();
+            DatePickerFragment dialog = DatePickerFragment.newInstance(crime.getDate());
+            dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATA);
             dialog.show(manager, DIALOG_DATE);
         });
 

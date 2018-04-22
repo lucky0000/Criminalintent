@@ -115,6 +115,7 @@ public class CrimeListFragment extends Fragment {
                 mAdapter = new CrimeAdapter(crimes);
                 mCrimeRecyclerView.setAdapter(mAdapter);
             } else {
+                mAdapter.setCrimes(crimes);
                 mAdapter.notifyDataSetChanged();
             }
 
@@ -141,6 +142,7 @@ public class CrimeListFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.new_crime:
                 Crime crime = new Crime();
+                crime.setTitle("title:" + Math.round(Math.random() * 1000));
                 CrimeLab.get(getActivity()).addCrime(crime);
 
                 Intent intent = CrimePagerActivity.getIntent(getActivity(), crime.getId());
@@ -198,6 +200,10 @@ public class CrimeListFragment extends Fragment {
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
         private List<Crime> mCrimes;
+
+        public void setCrimes(List<Crime> crimes) {
+            mCrimes = crimes;
+        }
 
         public CrimeAdapter(List<Crime> crimes) {
             mCrimes = crimes;

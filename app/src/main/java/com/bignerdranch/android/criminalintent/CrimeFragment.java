@@ -78,6 +78,14 @@ public class CrimeFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        //保存数据
+        CrimeLab.get(getActivity()).updateCrime(crime);
+    }
+
     private void updateDate() {
         btnCrimeDate.setText(DateFormat.format("yyyy-MM-dd kk:mm:ss", crime.getDate()).toString());
     }

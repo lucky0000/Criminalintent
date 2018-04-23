@@ -1,8 +1,10 @@
 package com.bignerdranch.android.criminalintent;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -23,12 +26,17 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.bignerdranch.android.criminalintent.model.Crime;
 import com.bignerdranch.android.criminalintent.model.CrimeLab;
 
+import org.w3c.dom.Text;
+
 import java.util.Date;
 import java.util.UUID;
+
+import static android.support.v4.content.PermissionChecker.checkSelfPermission;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -42,6 +50,11 @@ public class CrimeFragment extends Fragment {
     //联系人
     private static final int REQUEST_CONTACT = 1;
 
+    //权限
+    private static final int ASK_READ_CONTACTS_PERMISSION = 2;
+
+    private final Intent pickContact = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+
     private Crime crime;
 
     private EditText edCrimeTitle;
@@ -49,7 +62,10 @@ public class CrimeFragment extends Fragment {
     private Button btnCrimeDelete;
     private Button btnReport;
     private Button btnSuspect;
+    private Button btnCall;
     private CheckBox cbCrimeSolved;
+    private String phonenum;
+    private String phoneId;
     private static final String TAG = "CrimeFragment";
 
     /**
@@ -88,22 +104,76 @@ public class CrimeFragment extends Fragment {
             updateDate();
         } else if (requestCode == REQUEST_CONTACT && resultCode == Activity.RESULT_OK && data != null) {
             Uri contactUri = data.getData();
-            String[] queryFields = new String[]{ContactsContract.Contacts.DISPLAY_NAME};
+            String[] queryFields = new String[]{ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
             Cursor c = getActivity().getContentResolver().query(contactUri, queryFields, null, null, null);
             try {
                 if (c.getCount() == 0)
                     return;
                 c.moveToFirst();
                 String suspect = c.getString(0);
+                phoneId = c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
                 crime.setSuspect(suspect);
                 showCrime();
 
+                //获取电话
+
+
+                //SDK >= 23时，定义了Activity.checkSelfPermission方法
+                //为了避免对SDK版本的判断，兼容低版本，一般都是使用兼容库中的方法
+                //此处使用的是android.support.v4.app.Fragment中的checkSelfPermission
+                //对于Activity，可以使用ActivityCompat中的方法
+                int hasReadContactsPermission = checkSelfPermission(getActivity(),
+                        android.Manifest.permission.READ_CONTACTS);
+
+                //判断是否已有对应权限
+                //用户主动赋予过一次后，该应用就一直具有该权限，除非在应用管理中撤销
+                if (hasReadContactsPermission != PackageManager.PERMISSION_GRANTED) {
+                    //没有权限，则需要申请权限
+
+                    //当用户选择“拒绝权限申请，并不再提示”后，仍可能点击该按键
+                    //因此需要弹出提示框，提醒用户该功能需要权限
+                    //这就要用到shouldShowRequestPermissionRationale方法
+                    if (!shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS)) {
+                        showMessageOKCancel("You need to allow access to Contacts",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        //仍调用兼容库中的方法，申请权限
+                                        requestPermissions(
+                                                new String[]{Manifest.permission.READ_CONTACTS},
+                                                ASK_READ_CONTACTS_PERMISSION);
+                                    }
+                                });
+                        return;
+                    }
+
+                    requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
+                            ASK_READ_CONTACTS_PERMISSION);
+
+                    return;
+                }
+
+
+                getPhoneNumber(phoneId);
+
+
             } finally {
                 c.close();
+
             }
         }
 
 
+    }
+
+    private void getPhoneNumber(String id) {
+        Cursor c2 = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=" + id, null, null);
+        c2.moveToFirst();
+        phonenum = c2.getString(c2.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));   //通过Cursor c2获得联系人电话
+        //crime.setPhonenum(phonenum);
+        c2.close();
+        showCrime();
     }
 
     /**
@@ -156,6 +226,7 @@ public class CrimeFragment extends Fragment {
         btnCrimeDelete = (Button) v.findViewById(R.id.btn_crime_delete);
         btnReport = (Button) v.findViewById(R.id.crime_report);
         btnSuspect = (Button) v.findViewById(R.id.crime_suspect);
+        btnCall = (Button) v.findViewById(R.id.btn_call);
         cbCrimeSolved = (CheckBox) v.findViewById(R.id.cb_crime_solved);
 
         showCrime();
@@ -210,28 +281,20 @@ public class CrimeFragment extends Fragment {
             startActivity(i);
         });
 
-        btnSuspect.setOnClickListener(v3 -> {
-            Intent i = new Intent(Intent.ACTION_SEND);
-            i.setType("text/plain");
-            i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
-            i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
 
-            i = Intent.createChooser(i, getString(R.string.send_report));
-
-            startActivity(i);
-        });
-
-
-        final Intent pickContact = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
         btnSuspect.setOnClickListener(v1 -> {
             startActivityForResult(pickContact, REQUEST_CONTACT);
         });
 
-        //如果不存在指定的activity 则禁用按钮
-        PackageManager packageManager = getActivity().getPackageManager();
-        if (packageManager.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null)
-            btnSuspect.setEnabled(false);
 
+//        if (TextUtils.isEmpty(phonenum))
+//            btnCall.setEnabled(false);
+
+        btnCall.setOnClickListener(v1 -> {
+            Uri number = Uri.parse("tel:" + phonenum);
+            Intent i = new Intent(Intent.ACTION_DIAL, number);               //创建新的隐式Intent，拨打电话
+            startActivity(i);
+        });
 
         return v;
     }
@@ -242,6 +305,18 @@ public class CrimeFragment extends Fragment {
         updateDate();
         if (!TextUtils.isEmpty(crime.getSuspect()))
             btnSuspect.setText(crime.getSuspect());
+
+        if (!TextUtils.isEmpty(phonenum)) {
+            btnCall.setText("CALL:" + phonenum);
+            btnCall.setEnabled(true);
+        } else {
+            btnCall.setEnabled(false);
+        }
+
+        //如果不存在指定的activity 则禁用按钮
+        PackageManager packageManager = getActivity().getPackageManager();
+        if (packageManager.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null)
+            btnSuspect.setEnabled(false);
     }
 
     /**
@@ -268,5 +343,32 @@ public class CrimeFragment extends Fragment {
 
         String report = getString(R.string.crime_report, crime.getTitle(), dateString, solvedString, suspect);
         return report;
+    }
+
+
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(getActivity())
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case ASK_READ_CONTACTS_PERMISSION:
+                //由于只申请了一个权限，因此grantResults[0]就是对应权限的申请结果
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //权限申请成功，则可以获取电话号码并拨号
+                    getPhoneNumber(phoneId);
+                } else {
+                    Toast.makeText(getActivity(), "必须同意权限才可拨打电话", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 }

@@ -32,6 +32,7 @@ public class CrimeDao extends AbstractDao<Crime, Long> {
         public final static Property Title = new Property(2, String.class, "title", false, "TITLE");
         public final static Property Date = new Property(3, java.util.Date.class, "date", false, "DATE");
         public final static Property Solved = new Property(4, boolean.class, "solved", false, "SOLVED");
+        public final static Property Suspect = new Property(5, String.class, "suspect", false, "SUSPECT");
     }
 
     private final UUID2BytesConverter idConverter = new UUID2BytesConverter();
@@ -52,7 +53,8 @@ public class CrimeDao extends AbstractDao<Crime, Long> {
                 "\"ID\" TEXT NOT NULL UNIQUE ," + // 1: id
                 "\"TITLE\" TEXT NOT NULL ," + // 2: title
                 "\"DATE\" INTEGER NOT NULL ," + // 3: date
-                "\"SOLVED\" INTEGER NOT NULL );"); // 4: solved
+                "\"SOLVED\" INTEGER NOT NULL ," + // 4: solved
+                "\"SUSPECT\" TEXT);"); // 5: suspect
     }
 
     /** Drops the underlying database table. */
@@ -73,6 +75,11 @@ public class CrimeDao extends AbstractDao<Crime, Long> {
         stmt.bindString(3, entity.getTitle());
         stmt.bindLong(4, entity.getDate().getTime());
         stmt.bindLong(5, entity.getSolved() ? 1L: 0L);
+ 
+        String suspect = entity.getSuspect();
+        if (suspect != null) {
+            stmt.bindString(6, suspect);
+        }
     }
 
     @Override
@@ -87,6 +94,11 @@ public class CrimeDao extends AbstractDao<Crime, Long> {
         stmt.bindString(3, entity.getTitle());
         stmt.bindLong(4, entity.getDate().getTime());
         stmt.bindLong(5, entity.getSolved() ? 1L: 0L);
+ 
+        String suspect = entity.getSuspect();
+        if (suspect != null) {
+            stmt.bindString(6, suspect);
+        }
     }
 
     @Override
@@ -101,7 +113,8 @@ public class CrimeDao extends AbstractDao<Crime, Long> {
             idConverter.convertToEntityProperty(cursor.getString(offset + 1)), // id
             cursor.getString(offset + 2), // title
             new java.util.Date(cursor.getLong(offset + 3)), // date
-            cursor.getShort(offset + 4) != 0 // solved
+            cursor.getShort(offset + 4) != 0, // solved
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5) // suspect
         );
         return entity;
     }
@@ -113,6 +126,7 @@ public class CrimeDao extends AbstractDao<Crime, Long> {
         entity.setTitle(cursor.getString(offset + 2));
         entity.setDate(new java.util.Date(cursor.getLong(offset + 3)));
         entity.setSolved(cursor.getShort(offset + 4) != 0);
+        entity.setSuspect(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
      }
     
     @Override

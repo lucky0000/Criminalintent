@@ -38,7 +38,7 @@ public class Crime {
 
     @Generated(hash = 103115614)
     public Crime(Long uId, @NotNull UUID id, @NotNull String title,
-            @NotNull Date date, boolean solved, String suspect) {
+                 @NotNull Date date, boolean solved, String suspect) {
         this.uId = uId;
         this.id = id;
         this.title = title;
@@ -102,5 +102,9 @@ public class Crime {
 
     public void setSuspect(String suspect) {
         this.suspect = suspect;
+    }
+
+    public String getPhotoFilename() {
+        return "IMG_" + getId().toString() + ".jpg";
     }
 }

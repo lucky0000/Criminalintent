@@ -5,6 +5,7 @@ import android.content.Context;
 import com.bignerdranch.android.criminalintent.base.BaseApplication;
 import com.bignerdranch.android.criminalintent.dao.CrimeDao;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -60,6 +61,7 @@ public class CrimeLab {
     }
 
     private CrimeLab(Context context) {
+        mContent = context;
         //mCrimes = new ArrayList<>();
 //        for (int i = 0; i < 100; i++) {
 //            Crime item = new Crime();
@@ -67,6 +69,13 @@ public class CrimeLab {
 //            item.setSolved(i % 2 == 0);
 //            mCrimes.add(item);
 //        }
+    }
+
+    private Context mContent;
+
+    public File getPhotoFile(Crime crime) {
+        File filesDir = mContent.getFilesDir();
+        return new File(filesDir, crime.getPhotoFilename());
     }
 
 

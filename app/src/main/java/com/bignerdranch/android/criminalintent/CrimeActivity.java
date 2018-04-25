@@ -5,10 +5,11 @@ import android.content.Intent;
 import android.support.v4.app.Fragment;
 
 import com.bignerdranch.android.criminalintent.base.SingleFragmentActivity;
+import com.bignerdranch.android.criminalintent.model.Crime;
 
 import java.util.UUID;
 
-public class CrimeActivity extends SingleFragmentActivity {
+public class CrimeActivity extends SingleFragmentActivity implements CrimeFragment.Callbacks{
 
     private static final String EXTRA_CRIME_ID = "com.bignerdranch.android.criminalinten.CrimeActivity.crimeid";
 
@@ -24,5 +25,10 @@ public class CrimeActivity extends SingleFragmentActivity {
         Intent intent = new Intent(context, CrimeActivity.class);
         intent.putExtra(EXTRA_CRIME_ID, id);
         return intent;
+    }
+
+    @Override
+    public void onCrimeUpdated(Crime crime) {
+
     }
 }

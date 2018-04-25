@@ -3,6 +3,7 @@ package com.bignerdranch.android.criminalintent;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -77,6 +78,23 @@ public class CrimeFragment extends Fragment {
     private String phonenum;
     private String phoneId;
     private static final String TAG = "CrimeFragment";
+    private Callbacks mCallbacks;
+
+    public interface Callbacks {
+        void onCrimeUpdated(Crime crime);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+    }
 
     /**
      * 实例化本身 用于其他activity传递数据进来
@@ -112,6 +130,7 @@ public class CrimeFragment extends Fragment {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             crime.setDate(date);
             updateDate();
+            updateCrime();
         } else if (requestCode == REQUEST_CONTACT && resultCode == Activity.RESULT_OK && data != null) {
             Uri contactUri = data.getData();
             String[] queryFields = new String[]{ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
@@ -124,7 +143,7 @@ public class CrimeFragment extends Fragment {
                 phoneId = c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
                 crime.setSuspect(suspect);
                 showCrime();
-
+                updateCrime();
                 //获取电话
 
 
@@ -175,6 +194,7 @@ public class CrimeFragment extends Fragment {
             Uri uri = FileProvider.getUriForFile(getActivity(), "com.bignerdranch.android.criminalintent.fileprovider", mPhotoFile);
             getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             updatePhotoView();
+            updateCrime();
         }
 
         //==
@@ -258,6 +278,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 crime.setTitle(s.toString());
+                updateCrime();
             }
 
             @Override
@@ -280,12 +301,14 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 crime.setSolved(isChecked);
+                updateCrime();
             }
         });
 
         btnCrimeDelete.setOnClickListener(v2 -> {
             CrimeLab.get(getContext()).delCrime(crime);
-            getActivity().finish();
+            //getActivity().finish();
+            mCallbacks.onCrimeUpdated(new Crime());
         });
 
         btnReport.setOnClickListener(v3 -> {
@@ -418,5 +441,10 @@ public class CrimeFragment extends Fragment {
             ivCrimePhoto.setImageBitmap(bitmap);
         }
 
+    }
+
+    private void updateCrime() {
+        CrimeLab.get(getActivity()).updateCrime(crime);
+        mCallbacks.onCrimeUpdated(crime);
     }
 }

@@ -36,6 +36,24 @@ public class CrimeListFragment extends Fragment {
 
     private boolean mSubtitleVisible;
 
+    private Callbacks mCallbacks;
+
+    public interface Callbacks {
+        void onCrimeSelected(Crime crime);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+    }
+
     @Override
     public void onResume() {
         Log.d(TAG, "onResume: ");
@@ -101,7 +119,7 @@ public class CrimeListFragment extends Fragment {
         return view;
     }
 
-    private void updateUI() {
+    public void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
 
@@ -145,8 +163,10 @@ public class CrimeListFragment extends Fragment {
                 crime.setTitle("title:" + Math.round(Math.random() * 1000));
                 CrimeLab.get(getActivity()).addCrime(crime);
 
-                Intent intent = CrimePagerActivity.getIntent(getActivity(), crime.getId());
-                startActivityForResult(intent, 0);
+//                Intent intent = CrimePagerActivity.getIntent(getActivity(), crime.getId());
+//                startActivityForResult(intent, 0);
+                updateUI();//因为是同一页面 新增后立即加载
+                mCallbacks.onCrimeSelected(crime);
                 return true;
             case R.id.show_subtitle:
                 mSubtitleVisible = !mSubtitleVisible;
@@ -174,10 +194,10 @@ public class CrimeListFragment extends Fragment {
             itemView.setOnClickListener(v -> {
 //                Toast.makeText(getActivity(), mCrime.getTitle() + " click", Toast.LENGTH_SHORT).show();
 //                Intent intent = CrimeActivity.getIntent(getActivity(), mCrime.getId());
-                Intent intent = CrimePagerActivity.getIntent(getActivity(), mCrime.getId());
-//                startActivity(intent);
-                startActivityForResult(intent, 0);
-
+//                Intent intent = CrimePagerActivity.getIntent(getActivity(), mCrime.getId());
+////                startActivity(intent);
+//                startActivityForResult(intent, 0);
+                mCallbacks.onCrimeSelected(mCrime);
             });
 
             txtTitle = (TextView) itemView.findViewById(R.id.crime_title);

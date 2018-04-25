@@ -308,7 +308,7 @@ public class CrimeFragment extends Fragment {
         btnCrimeDelete.setOnClickListener(v2 -> {
             CrimeLab.get(getContext()).delCrime(crime);
             //getActivity().finish();
-            mCallbacks.onCrimeUpdated(new Crime());
+            mCallbacks.onCrimeUpdated(null);
         });
 
         btnReport.setOnClickListener(v3 -> {

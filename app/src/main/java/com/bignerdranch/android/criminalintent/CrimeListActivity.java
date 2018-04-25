@@ -37,14 +37,19 @@ public class CrimeListActivity extends SingleFragmentActivity
         CrimeListFragment crimeListFragment = (CrimeListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         crimeListFragment.updateUI();
 
-//        if(crime.getUId()==0)
-//        {
-//            //Fragment newDetail = CrimeFragment.newInstance(crime.getId());
-//            getSupportFragmentManager().beginTransaction()
-//                    .replace(R.id.,null)
-//                    .commit();
-//
-//        }
+        //删除的时候 详细则不显示了
+        if(crime==null)
+        {
+            Fragment crimeFragment = (CrimeFragment) getSupportFragmentManager().findFragmentById(R.id.detail_fragment_container);
+//            crimeFragment.getLayoutInflater().inflate()
+            if(crimeFragment!=null){
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.detail_fragment_container,new Fragment())
+                        .commit();
+            }
+
+        }
 
     }
 }

@@ -29,6 +29,10 @@ public class CrimeActivity extends SingleFragmentActivity implements CrimeFragme
 
     @Override
     public void onCrimeUpdated(Crime crime) {
-
+//        if(crime.getUId()==0)
+//        {
+//            this.setContentView(R.layout.activity_empty_data);
+//
+//        }
     }
 }
